@@ -27,23 +27,29 @@ function App() {
       return;
     }
 
-    // Try to find seats in the same row
+    // Find the row that can be fully filled
     const rows = Array.from(new Set(seats.map(seat => seat.rowNumber)));
     let seatsToBook: number[] = [];
 
-    // First, try to find seats in the same row
-    for (const row of rows) {
-      const seatsInRow = seats.filter(
-        seat => seat.rowNumber === row && !seat.isBooked
-      );
-      if (seatsInRow.length >= numSeats) {
-        seatsToBook = seatsInRow.slice(0, numSeats).map(seat => seat.id);
-        break;
-      }
-    }
+    // Sort rows by the number of unbooked seats in ascending order
+    const rowCandidates = rows
+      .map(row => {
+        const unbookedSeatsInRow = seats.filter(
+          seat => seat.rowNumber === row && !seat.isBooked
+        );
+        return {
+          row,
+          unbookedSeats: unbookedSeatsInRow,
+        };
+      })
+      .filter(rowData => rowData.unbookedSeats.length >= numSeats)
+      .sort((a, b) => a.unbookedSeats.length - b.unbookedSeats.length);
 
-    // If we couldn't find seats in the same row, book nearby seats
-    if (seatsToBook.length === 0) {
+    // Attempt to book seats in the best row
+    if (rowCandidates.length > 0) {
+      seatsToBook = rowCandidates[0].unbookedSeats.slice(0, numSeats).map(seat => seat.id);
+    } else {
+      // Fallback: book nearby seats if no row can be fully filled
       seatsToBook = availableSeats.slice(0, numSeats).map(seat => seat.id);
     }
 
