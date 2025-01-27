@@ -10,6 +10,9 @@ export type Seat = {
   rowNumber: number;
 };
 
+//this is for testing purpose only 
+
+
 function App() {
   const [seats, setSeats] = useState<Seat[]>(generateInitialSeats());
   const [error, setError] = useState<string>('');
